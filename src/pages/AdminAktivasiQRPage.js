@@ -48,6 +48,8 @@ export default function AdminAktivasiQRPage() {
       setLoading(false);
     };
     fetchData();
+    // expose fetchData for manual refresh
+    AdminAktivasiQRPage.fetchData = fetchData;
   }, []);
 
   const handleScan = async (data) => {
@@ -67,6 +69,16 @@ export default function AdminAktivasiQRPage() {
       setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
       return;
     }
+    if (kupon.jenis === 'panitia' && jumlahBelumAktifPanitia === 0) {
+      setAlertInfo({ type: 'error', message: 'Kuota aktivasi kupon panitia sudah penuh!', show: true });
+      setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
+      return;
+    }
+    if (kupon.jenis === 'peserta' && jumlahBelumAktifPeserta === 0) {
+      setAlertInfo({ type: 'error', message: 'Kuota aktivasi kupon peserta sudah penuh!', show: true });
+      setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
+      return;
+    }
     const status = await getStatusKupon(uuid, tahunAktif.tahun);
     if (status && status.status === 'aktif') {
       setResult({ uuid, status: 'sudah_aktif', jenis: kupon.jenis });
@@ -77,6 +89,10 @@ export default function AdminAktivasiQRPage() {
     await setStatusKuponAktif(uuid, tahunAktif.tahun);
     setResult({ uuid, status: 'berhasil', jenis: kupon.jenis });
     setAlertInfo({ type: 'success', message: `QR code ${uuid} (${kupon.jenis}) berhasil diaktivasi!`, show: true });
+    // Refresh data setelah aktivasi
+    if (typeof AdminAktivasiQRPage.fetchData === 'function') {
+      await AdminAktivasiQRPage.fetchData();
+    }
     setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
   };
 
