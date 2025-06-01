@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Alert, Button, Spin } from 'antd';
-import { getAllTahunAktif } from '../services/kuponAktifService';
+import { getAllTahunAktif } from '../services/tahunQurbanService';
 import { getAllKupons } from '../services/kuponService';
-import { getStatusKupon, setStatusKuponAktif } from '../services/kuponStatusService';
+import { getStatusKupon, setStatusKuponAktif, getAllStatusKuponByTahun } from '../services/kuponStatusService';
 import SidebarLayout from '../components/SidebarLayout';
 import { useOutletContext } from 'react-router-dom';
 import QRScanner from '../components/QRScanner';
@@ -18,6 +18,9 @@ export default function AdminAktivasiQRPage() {
   const [scanError, setScanError] = useState(null);
   const [scanning, setScanning] = useState(true);
   const [alertInfo, setAlertInfo] = useState({ type: '', message: '', show: false });
+  const [jumlahBelumAktif, setJumlahBelumAktif] = useState(null);
+  const [jumlahBelumAktifPanitia, setJumlahBelumAktifPanitia] = useState(null);
+  const [jumlahBelumAktifPeserta, setJumlahBelumAktifPeserta] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,6 +30,21 @@ export default function AdminAktivasiQRPage() {
       setTahunAktif(aktif);
       const kuponList = await getAllKupons();
       setKupons(kuponList);
+      if (aktif) {
+        const statusList = await getAllStatusKuponByTahun(aktif.tahun);
+        const aktifUuids = statusList.filter(s => s.status === 'aktif').map(s => s.uuid);
+        const kuponAktifPanitia = kuponList.filter(k => aktifUuids.includes(k.uuid) && k.jenis === 'panitia').length;
+        const kuponAktifPeserta = kuponList.filter(k => aktifUuids.includes(k.uuid) && k.jenis === 'peserta').length;
+        const jumlahPanitiaDialokasikan = aktif.jumlahPanitia || 0;
+        const jumlahPesertaDialokasikan = aktif.jumlahPeserta || 0;
+        setJumlahBelumAktifPanitia(Math.max(jumlahPanitiaDialokasikan - kuponAktifPanitia, 0));
+        setJumlahBelumAktifPeserta(Math.max(jumlahPesertaDialokasikan - kuponAktifPeserta, 0));
+        setJumlahBelumAktif(Math.max((jumlahPanitiaDialokasikan - kuponAktifPanitia) + (jumlahPesertaDialokasikan - kuponAktifPeserta), 0));
+      } else {
+        setJumlahBelumAktif(null);
+        setJumlahBelumAktifPanitia(null);
+        setJumlahBelumAktifPeserta(null);
+      }
       setLoading(false);
     };
     fetchData();
@@ -86,6 +104,20 @@ export default function AdminAktivasiQRPage() {
             style={{ marginBottom: 16, position: 'sticky', top: 0, zIndex: 1000 }}
             closable
             onClose={() => setAlertInfo({ ...alertInfo, show: false })}
+          />
+        )}
+        {jumlahBelumAktifPanitia !== null && jumlahBelumAktifPeserta !== null && tahunAktif && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message={
+              <div>
+                <div><b>Jumlah kupon yang belum diaktivasi tahun {tahunAktif.tahun}:</b></div>
+                <div>Panitia: <b>{jumlahBelumAktifPanitia}</b></div>
+                <div>Peserta: <b>{jumlahBelumAktifPeserta}</b></div>
+              </div>
+            }
           />
         )}
         {loading ? <Spin /> : tahunAktif ? (

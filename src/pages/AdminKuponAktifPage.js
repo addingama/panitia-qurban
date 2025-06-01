@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Table, Tag, Spin } from 'antd';
-import { getAllTahunAktif } from '../services/kuponAktifService';
+import { getAllTahunAktif } from '../services/tahunQurbanService';
 import { getAllKupons } from '../services/kuponService';
 import { getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';

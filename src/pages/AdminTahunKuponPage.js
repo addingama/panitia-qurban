@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, InputNumber, Input, Typography, message, Popconfirm, Modal, Drawer, Tag } from 'antd';
-import { getAllTahunAktif, addTahunAktif, updateTahunAktif, deleteTahunAktif, setTahunAktif } from '../services/kuponAktifService';
+import { getAllTahunAktif, addTahunAktif, updateTahunAktif, deleteTahunAktif, setTahunAktif } from '../services/tahunQurbanService';
 import { getAllKupons } from '../services/kuponService';
 import { getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';

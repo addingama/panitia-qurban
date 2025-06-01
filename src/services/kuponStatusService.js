@@ -19,4 +19,11 @@ export async function setStatusKuponAktif(uuid, tahun) {
     tahun,
     status: 'aktif',
   });
+}
+
+// Ambil semua status kupon untuk tahun tertentu
+export async function getAllStatusKuponByTahun(tahun) {
+  const q = query(collection(db, KUPON_STATUS_COLLECTION), where('tahun', '==', tahun));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => doc.data());
 } 
