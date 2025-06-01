@@ -5,6 +5,7 @@ import { generateKuponUUID } from '../utils/uuidGenerator';
 import { QRCodeCanvas } from 'qrcode.react';
 import SidebarLayout from '../components/SidebarLayout';
 import QRCode from 'qrcode';
+import { useOutletContext } from 'react-router-dom';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -16,6 +17,7 @@ export default function AdminMasterQRPage() {
   const [kupons, setKupons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const { activeKey, onMenuClick } = useOutletContext() || {};
 
   const fetchKupons = async () => {
     setLoading(true);
@@ -129,8 +131,8 @@ export default function AdminMasterQRPage() {
   const totalPeserta = kupons.filter(k => k.jenis === 'peserta').length;
 
   return (
-    <SidebarLayout activeKey="master">
-      <div style={{ maxWidth: 1000, margin: '0 auto', background: '#fff', padding: 24, borderRadius: 8 }}>
+    <SidebarLayout activeKey={activeKey || 'master'} onMenuClick={onMenuClick}>
+      <div style={{ maxWidth: '100%', width: '100%', margin: 0, background: '#fff', padding: 24, borderRadius: 8 }}>
         <Title level={3}>Master Data QR Code Kupon</Title>
         <div style={{ marginBottom: 16, fontSize: 16 }}>
           <strong>Total Kupon:</strong> {totalKupon} &nbsp;|&nbsp; 

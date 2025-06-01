@@ -5,12 +5,14 @@ import {
   UserOutlined,
   LogoutOutlined,
   DashboardOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 
 const { Sider, Content } = Layout;
 
 const adminMenu = [
   { key: 'master', icon: <QrcodeOutlined />, label: 'Master QR' },
+  { key: 'tahun', icon: <CalendarOutlined />, label: 'Tahun' },
   // Tambahkan menu lain untuk admin di sini
 ];
 
