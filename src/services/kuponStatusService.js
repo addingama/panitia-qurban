@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 const KUPON_STATUS_COLLECTION = 'kupon_status';
@@ -26,4 +26,10 @@ export async function getAllStatusKuponByTahun(tahun) {
   const q = query(collection(db, KUPON_STATUS_COLLECTION), where('tahun', '==', tahun));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => doc.data());
+}
+
+// Hapus status kupon untuk uuid & tahun tertentu
+export async function deleteStatusKupon(uuid, tahun) {
+  const docId = `${uuid}_${tahun}`;
+  await deleteDoc(doc(db, KUPON_STATUS_COLLECTION, docId));
 } 
