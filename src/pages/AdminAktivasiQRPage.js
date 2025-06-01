@@ -139,7 +139,19 @@ export default function AdminAktivasiQRPage() {
         {loading ? <Spin /> : tahunAktif ? (
           <>
             <Alert type="info" showIcon style={{ marginBottom: 16 }} message={`Tahun aktif: ${tahunAktif.tahun}`} />
-            {scanning && <QRScanner onScan={handleScan} onError={handleError} />}
+            {!scanning && (
+              <Button type="primary" block style={{ marginBottom: 16 }} onClick={() => setScanning(true)}>
+                Mulai Scan
+              </Button>
+            )}
+            {scanning && (
+              <>
+                <Button type="default" block style={{ marginBottom: 8 }} onClick={() => setScanning(false)}>
+                  Stop Scan
+                </Button>
+                <QRScanner onScan={handleScan} onError={handleError} />
+              </>
+            )}
           </>
         ) : (
           <Alert type="warning" showIcon message="Belum ada tahun aktif. Silakan set tahun aktif terlebih dahulu." />

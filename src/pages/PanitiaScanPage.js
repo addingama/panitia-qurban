@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Alert, Spin } from 'antd';
+import { Typography, Alert, Spin, Button } from 'antd';
 import { getAllTahunAktif } from '../services/tahunQurbanService';
 import { getAllKupons } from '../services/kuponService';
 import { getStatusKupon, setStatusKuponDiambil, getAllStatusKuponByTahun } from '../services/kuponStatusService';
@@ -117,7 +117,21 @@ export default function PanitiaScanPage() {
           }
         />
         {loading ? <Spin /> : tahunAktif ? (
-          <QRScanner onScan={handleScan} onError={() => {}} />
+          <>
+            {!scanning && (
+              <Button type="primary" block style={{ marginBottom: 16 }} onClick={() => setScanning(true)}>
+                Mulai Scan
+              </Button>
+            )}
+            {scanning && (
+              <>
+                <Button type="default" block style={{ marginBottom: 8 }} onClick={() => setScanning(false)}>
+                  Stop Scan
+                </Button>
+                <QRScanner onScan={handleScan} onError={() => {}} />
+              </>
+            )}
+          </>
         ) : (
           <Alert type="warning" showIcon message="Belum ada tahun aktif. Silakan set tahun aktif terlebih dahulu." />
         )}
