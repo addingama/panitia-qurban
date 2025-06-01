@@ -7,12 +7,22 @@ export default function QRScanner({ onScan, onError, id = 'qr-scanner' }) {
   const scannerStatus = useRef('idle'); // 'idle' | 'starting' | 'running' | 'stopping' | 'transition'
   const [cameras, setCameras] = useState([]);
   const [selectedCamera, setSelectedCamera] = useState(null);
+  const [backCameras, setBackCameras] = useState([]);
+  const [backCamIndex, setBackCamIndex] = useState(0);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     Html5Qrcode.getCameras().then(devices => {
+      const backs = devices.filter(d => d.label.toLowerCase().includes('back'));
+      setBackCameras(backs);
       setCameras(devices);
-      const backCam = devices.find(d => d.label.toLowerCase().includes('back'));
-      setSelectedCamera(backCam ? backCam.id : devices[0]?.id);
+      if (backs.length > 0) {
+        setSelectedCamera(backs[0].id);
+        setBackCamIndex(0);
+      } else {
+        setSelectedCamera(devices[0]?.id);
+        setBackCamIndex(-1);
+      }
     });
     return () => {
       const cleanup = async () => {
@@ -72,7 +82,29 @@ export default function QRScanner({ onScan, onError, id = 'qr-scanner' }) {
         scannerStatus.current = 'running';
       }).catch((err) => {
         scannerStatus.current = 'idle';
-        onError && onError(err);
+        setErrorMsg('');
+        if (backCameras.length > 1 && backCamIndex >= 0 && backCamIndex < backCameras.length - 1) {
+          setTimeout(() => {
+            setBackCamIndex(idx => {
+              const nextIdx = idx + 1;
+              setSelectedCamera(backCameras[nextIdx].id);
+              return nextIdx;
+            });
+          }, 500);
+        } else if (backCameras.length === 0 && cameras.length > 1) {
+          const currentIdx = cameras.findIndex(cam => cam.id === selectedCamera);
+          if (currentIdx >= 0 && currentIdx < cameras.length - 1) {
+            setTimeout(() => {
+              setSelectedCamera(cameras[currentIdx + 1].id);
+            }, 500);
+          } else {
+            setErrorMsg('Tidak dapat mengakses kamera. Silakan cek izin kamera di perangkat Anda, atau refresh halaman.');
+            onError && onError(err);
+          }
+        } else {
+          setErrorMsg('Tidak dapat mengakses kamera. Silakan cek izin kamera di perangkat Anda, atau refresh halaman.');
+          onError && onError(err);
+        }
       });
     };
 
@@ -106,13 +138,19 @@ export default function QRScanner({ onScan, onError, id = 'qr-scanner' }) {
 
   return (
     <div>
-      {cameras.length > 1 && (
+      {errorMsg && (
+        <div style={{ color: 'red', marginBottom: 8, fontWeight: 'bold' }}>{errorMsg}</div>
+      )}
+      {backCameras.length > 1 && (
         <select
           value={selectedCamera}
-          onChange={e => setSelectedCamera(e.target.value)}
+          onChange={e => {
+            setSelectedCamera(e.target.value);
+            setBackCamIndex(backCameras.findIndex(cam => cam.id === e.target.value));
+          }}
           style={{ marginBottom: 8 }}
         >
-          {cameras.map(cam => (
+          {backCameras.map(cam => (
             <option key={cam.id} value={cam.id}>{cam.label}</option>
           ))}
         </select>

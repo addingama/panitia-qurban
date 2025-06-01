@@ -30,9 +30,11 @@ export default function AdminKuponAktifPage() {
       const aktif = tahunList.find(t => t.aktif);
       setTahunAktif(aktif);
       if (aktif) {
-        const q = query(collection(db, 'kupon_status'), where('tahun', '==', aktif.tahun), where('status', '==', 'aktif'));
+        const q = query(collection(db, 'kupon_status'), where('tahun', '==', aktif.tahun));
         const snapshot = await getDocs(q);
-        const kuponStatus = snapshot.docs.map(doc => doc.data());
+        const kuponStatus = snapshot.docs
+          .map(doc => doc.data())
+          .filter(k => k.status === 'aktif' || k.status === 'diambil');
         const masterKupon = await getAllKupons();
         const list = kuponStatus.map(k => ({
           ...k,
@@ -66,9 +68,11 @@ export default function AdminKuponAktifPage() {
       const aktif = tahunList.find(t => t.aktif);
       setTahunAktif(aktif);
       if (aktif) {
-        const q = query(collection(db, 'kupon_status'), where('tahun', '==', aktif.tahun), where('status', '==', 'aktif'));
+        const q = query(collection(db, 'kupon_status'), where('tahun', '==', aktif.tahun));
         const snapshot = await getDocs(q);
-        const kuponStatus = snapshot.docs.map(doc => doc.data());
+        const kuponStatus = snapshot.docs
+          .map(doc => doc.data())
+          .filter(k => k.status === 'aktif' || k.status === 'diambil');
         const masterKupon = await getAllKupons();
         const list = kuponStatus.map(k => ({
           ...k,
@@ -154,6 +158,17 @@ export default function AdminKuponAktifPage() {
                   { text: 'Peserta', value: 'peserta' },
                 ],
                 onFilter: (value, record) => record.jenis === value,
+              },
+              {
+                title: 'Status',
+                dataIndex: 'status',
+                key: 'status',
+                render: status => status === 'diambil' ? <Tag color="red">Diambil</Tag> : <Tag color="green">Aktif</Tag>,
+                filters: [
+                  { text: 'Aktif', value: 'aktif' },
+                  { text: 'Diambil', value: 'diambil' },
+                ],
+                onFilter: (value, record) => record.status === value,
               },
               { title: 'QR', dataIndex: 'uuid', key: 'qr', render: uuid => <QRCodeCanvas value={uuid} size={40} /> },
               {

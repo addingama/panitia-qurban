@@ -10,7 +10,7 @@ import {
   CheckCircleOutlined,
 } from '@ant-design/icons';
 
-const { Sider, Content } = Layout;
+const { Sider, Content, Header } = Layout;
 
 const adminMenu = [
   { key: 'master', icon: <QrcodeOutlined />, label: 'Master QR' },
@@ -28,11 +28,13 @@ const panitiaMenu = [
 export default function SidebarLayout({ children, activeKey, onMenuClick }) {
   const role = localStorage.getItem('role');
   const menuItems = role === 'admin' ? adminMenu : panitiaMenu;
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [collapsed, setCollapsed] = useState(false);
 
-  // Responsive: auto collapse on small screen
+  // Responsive: switch to topnav on small screen
   useEffect(() => {
     const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
       setCollapsed(window.innerWidth < 768);
     };
     handleResize();
@@ -44,6 +46,30 @@ export default function SidebarLayout({ children, activeKey, onMenuClick }) {
     localStorage.removeItem('role');
     window.location.href = '/login';
   };
+
+  if (isMobile) {
+    // Topnav mode
+    return (
+      <Layout style={{ minHeight: '100vh' }}>
+        <Header style={{ background: '#fff', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px #f0f1f2' }}>
+          <div style={{ fontWeight: 'bold', fontSize: 18, paddingLeft: 16 }}>Qurban App</div>
+          <Menu
+            mode="horizontal"
+            selectedKeys={[activeKey]}
+            items={menuItems}
+            onClick={({ key }) => onMenuClick && onMenuClick(key)}
+            style={{ flex: 1, minWidth: 0, borderBottom: 'none', justifyContent: 'center' }}
+          />
+          <Button icon={<LogoutOutlined />} danger style={{ marginRight: 8 }} onClick={handleLogout}>
+            Logout
+          </Button>
+        </Header>
+        <Content style={{ margin: 0, padding: 12, minHeight: 280, background: '#f8fafd' }}>
+          {children}
+        </Content>
+      </Layout>
+    );
+  }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
