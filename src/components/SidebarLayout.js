@@ -7,6 +7,7 @@ import {
   DashboardOutlined,
   CalendarOutlined,
   ThunderboltOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons';
 
 const { Sider, Content } = Layout;
@@ -15,6 +16,7 @@ const adminMenu = [
   { key: 'master', icon: <QrcodeOutlined />, label: 'Master QR' },
   { key: 'tahun', icon: <CalendarOutlined />, label: 'Tahun' },
   { key: 'aktivasi', icon: <ThunderboltOutlined />, label: 'Aktivasi QR' },
+  { key: 'kupon-aktif', icon: <CheckCircleOutlined />, label: 'Kupon Aktif Tahun Ini' },
   // Tambahkan menu lain untuk admin di sini
 ];
 

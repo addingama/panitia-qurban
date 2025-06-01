@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import AdminMasterQRPage from './pages/AdminMasterQRPage';
 import AdminTahunKuponPage from './pages/AdminTahunKuponPage';
 import AdminAktivasiQRPage from './pages/AdminAktivasiQRPage';
+import AdminKuponAktifPage from './pages/AdminKuponAktifPage';
 import { Button, message } from 'antd';
 
 // Konfigurasi global toast agar selalu terlihat di HP
@@ -43,12 +44,14 @@ function AdminLayout() {
     if (key === 'master') navigate('/admin');
     if (key === 'tahun') navigate('/admin/tahun');
     if (key === 'aktivasi') navigate('/admin/aktivasi');
+    if (key === 'kupon-aktif') navigate('/admin/kupon-aktif');
   };
   // Tentukan menu aktif berdasarkan path
   const path = window.location.pathname;
   let activeKey = 'master';
   if (path.startsWith('/admin/tahun')) activeKey = 'tahun';
   else if (path.startsWith('/admin/aktivasi')) activeKey = 'aktivasi';
+  else if (path.startsWith('/admin/kupon-aktif')) activeKey = 'kupon-aktif';
   return (
     <>
       {/* Outlet akan render halaman child (MasterQR atau Tahun) */}
@@ -73,6 +76,7 @@ export default function App() {
           <Route index element={<AdminMasterQRPage />} />
           <Route path="tahun" element={<AdminTahunKuponPage />} />
           <Route path="aktivasi" element={<AdminAktivasiQRPage />} />
+          <Route path="kupon-aktif" element={<AdminKuponAktifPage />} />
         </Route>
         <Route
           path="/panitia"

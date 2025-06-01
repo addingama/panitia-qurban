@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, InputNumber, Input, Typography, message, Popconfirm, Modal } from 'antd';
+import { Table, Button, Form, InputNumber, Input, Typography, message, Popconfirm, Modal, Drawer, Tag } from 'antd';
 import { getAllTahunAktif, addTahunAktif, updateTahunAktif, deleteTahunAktif, setTahunAktif } from '../services/kuponAktifService';
+import { getAllKupons } from '../services/kuponService';
+import { getDocs, collection, query, where } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import SidebarLayout from '../components/SidebarLayout';
 import { useOutletContext } from 'react-router-dom';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const { Title } = Typography;
 
@@ -14,6 +18,9 @@ export default function AdminTahunKuponPage() {
   const [editRecord, setEditRecord] = useState(null);
   const [editForm] = Form.useForm();
   const { activeKey, onMenuClick } = useOutletContext() || {};
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [kuponAktifList, setKuponAktifList] = useState([]);
+  const [kuponAktifTahun, setKuponAktifTahun] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -90,6 +97,24 @@ export default function AdminTahunKuponPage() {
     setLoading(false);
   };
 
+  // Ambil daftar kupon aktif untuk tahun tertentu
+  const handleShowKuponAktif = async (tahun) => {
+    setDrawerOpen(true);
+    setKuponAktifTahun(tahun);
+    // Ambil kupon_status dengan tahun dan status aktif
+    const q = query(collection(db, 'kupon_status'), where('tahun', '==', tahun), where('status', '==', 'aktif'));
+    const snapshot = await getDocs(q);
+    const kuponStatus = snapshot.docs.map(doc => doc.data());
+    // Ambil master kupon untuk info jenis
+    const masterKupon = await getAllKupons();
+    // Gabungkan info jenis
+    const list = kuponStatus.map(k => ({
+      ...k,
+      jenis: masterKupon.find(m => m.uuid === k.uuid)?.jenis || '-',
+    }));
+    setKuponAktifList(list);
+  };
+
   const columns = [
     { title: 'Tahun', dataIndex: 'tahun', key: 'tahun', sorter: (a, b) => b.tahun - a.tahun },
     { title: 'Kupon Panitia', dataIndex: 'jumlahPanitia', key: 'jumlahPanitia' },
@@ -105,6 +130,7 @@ export default function AdminTahunKuponPage() {
       key: 'aksi',
       render: (_, record) => (
         <>
+          <Button size="small" onClick={() => handleShowKuponAktif(record.tahun)} style={{ marginRight: 8 }}>Lihat Kupon Aktif</Button>
           {!record.aktif && (
             <Button size="small" type="primary" onClick={() => handleSetAktif(record.id)} style={{ marginRight: 8 }}>Set Aktif</Button>
           )}
@@ -166,6 +192,25 @@ export default function AdminTahunKuponPage() {
             </Form.Item>
           </Form>
         </Modal>
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          title={`Daftar Kupon Aktif Tahun ${kuponAktifTahun || ''}`}
+          width={420}
+        >
+          <Table
+            columns={[
+              { title: 'UUID', dataIndex: 'uuid', key: 'uuid', render: text => <span style={{ fontSize: 12 }}>{text}</span> },
+              { title: 'Jenis', dataIndex: 'jenis', key: 'jenis', render: jenis => <Tag color={jenis === 'panitia' ? 'blue' : 'green'}>{jenis.toUpperCase()}</Tag> },
+              { title: 'QR', dataIndex: 'uuid', key: 'qr', render: uuid => <QRCodeCanvas value={uuid} size={40} /> },
+            ]}
+            dataSource={kuponAktifList.map((k, i) => ({ ...k, key: k.uuid + i }))}
+            size="small"
+            pagination={{ pageSize: 20 }}
+            scroll={{ x: true, y: 400 }}
+            bordered
+          />
+        </Drawer>
       </div>
     </SidebarLayout>
   );
