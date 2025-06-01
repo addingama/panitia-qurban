@@ -123,10 +123,20 @@ export default function AdminMasterQRPage() {
     setTimeout(() => printWindow.print(), 500);
   };
 
+  // Hitung jumlah kupon per jenis
+  const totalKupon = kupons.length;
+  const totalPanitia = kupons.filter(k => k.jenis === 'panitia').length;
+  const totalPeserta = kupons.filter(k => k.jenis === 'peserta').length;
+
   return (
     <SidebarLayout activeKey="master">
       <div style={{ maxWidth: 1000, margin: '0 auto', background: '#fff', padding: 24, borderRadius: 8 }}>
         <Title level={3}>Master Data QR Code Kupon</Title>
+        <div style={{ marginBottom: 16, fontSize: 16 }}>
+          <strong>Total Kupon:</strong> {totalKupon} &nbsp;|&nbsp; 
+          <strong>Panitia:</strong> {totalPanitia} &nbsp;|&nbsp; 
+          <strong>Peserta:</strong> {totalPeserta}
+        </div>
         <Form layout="inline" form={form} onFinish={handleAddKupon} style={{ marginBottom: 24 }}>
           <Form.Item name="jenis" label="Jenis Kupon" rules={[{ required: true, message: 'Pilih jenis kupon!' }]}> 
             <Select style={{ width: 120 }} placeholder="Pilih jenis">
