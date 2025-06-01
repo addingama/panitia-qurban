@@ -4,6 +4,7 @@ import { getAllKupons, addKupons, deleteKupon } from '../services/kuponService';
 import { generateKuponUUID } from '../utils/uuidGenerator';
 import { QRCodeCanvas } from 'qrcode.react';
 import SidebarLayout from '../components/SidebarLayout';
+import QRCode from 'qrcode';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -98,20 +99,25 @@ export default function AdminMasterQRPage() {
     },
   ];
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     const printWindow = window.open('', '', 'width=900,height=700');
     printWindow.document.write('<html><head><title>Print QR Code</title></head><body>');
-    printWindow.document.write('<h2>Daftar QR Code Kupon Qurban</h2>');
-    printWindow.document.write('<div style="display: flex; flex-wrap: wrap; gap: 16px;">');
-    kupons.forEach(k => {
+    printWindow.document.write('<h2 style="font-size:18px;">Daftar QR Code Kupon Qurban</h2>');
+    printWindow.document.write('<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">');
+    for (let i = 0; i < kupons.length; i++) {
+      const k = kupons[i];
+      const dataUrl = await QRCode.toDataURL(k.uuid, { width: 96, margin: 2 });
+      if (i > 0 && i % 25 === 0) {
+        printWindow.document.write('</div><div style="page-break-before: always; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">');
+      }
       printWindow.document.write(`
-        <div style="border:1px solid #ccc; padding:8px; margin:8px; text-align:center; width:140px;">
-          <div><strong>${k.jenis.toUpperCase()}</strong></div>
-          <div style="margin:8px 0;"><img src="${document.querySelector(`img[alt='qr-${k.uuid}']`)?.src || ''}" width="96" height="96" /></div>
-          <div style="font-size:10px;word-break:break-all;">${k.uuid}</div>
+        <div style="border:1px solid #ccc; padding:8px; margin:8px; text-align:center; width:120px; box-sizing:border-box;">
+          <div style=\"font-size:14px;\"><strong>${k.jenis.toUpperCase()}</strong></div>
+          <div style=\"margin:8px 0;\"><img src=\"${dataUrl}\" width=\"96\" height=\"96\" /></div>
+          <div style=\"font-size:12px;word-break:break-all;\">${k.uuid}</div>
         </div>
       `);
-    });
+    }
     printWindow.document.write('</div></body></html>');
     printWindow.document.close();
     setTimeout(() => printWindow.print(), 500);
