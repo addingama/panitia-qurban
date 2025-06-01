@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import LoginPage from './pages/LoginPage';
+import { Button } from 'antd';
 
-function App() {
+function handleLogout() {
+  localStorage.removeItem('role');
+  window.location.reload();
+}
+
+function AdminPage() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ padding: 32 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Admin Page</h2>
+        <Button onClick={handleLogout} type="primary" danger>Logout</Button>
+      </div>
+      <p>Selamat datang, Admin!</p>
     </div>
   );
+}
+
+function PanitiaPage() {
+  return (
+    <div style={{ padding: 32 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Panitia Page</h2>
+        <Button onClick={handleLogout} type="primary" danger>Logout</Button>
+      </div>
+      <p>Selamat datang, Panitia!</p>
+    </div>
+  );
+}
+
+function App() {
+  const role = localStorage.getItem('role');
+
+  if (!role) {
+    return <LoginPage />;
+  }
+
+  if (role === 'admin') {
+    return <AdminPage />;
+  }
+  if (role === 'panitia') {
+    return <PanitiaPage />;
+  }
+  // fallback jika role tidak valid
+  return <LoginPage />;
 }
 
 export default App;
