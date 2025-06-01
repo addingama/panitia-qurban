@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Alert, Button, message, Spin } from 'antd';
+import { Typography, Alert, Button, Spin } from 'antd';
 import { getAllTahunAktif } from '../services/kuponAktifService';
 import { getAllKupons } from '../services/kuponService';
 import { getStatusKupon, setStatusKuponAktif } from '../services/kuponStatusService';
@@ -17,6 +17,7 @@ export default function AdminAktivasiQRPage() {
   const [result, setResult] = useState(null);
   const [scanError, setScanError] = useState(null);
   const [scanning, setScanning] = useState(true);
+  const [alertInfo, setAlertInfo] = useState({ type: '', message: '', show: false });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,28 +38,28 @@ export default function AdminAktivasiQRPage() {
     setResult(null);
     setScanError(null);
     if (!tahunAktif) {
-      message.error('Tahun aktif belum di-set.');
-      setTimeout(() => setScanning(true), 1500);
+      setAlertInfo({ type: 'error', message: 'Tahun aktif belum di-set.', show: true });
+      setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
       return;
     }
     const uuid = data.trim();
     const kupon = kupons.find(k => k.uuid === uuid);
     if (!kupon) {
-      message.error('QR code tidak terdaftar di master data!');
-      setTimeout(() => setScanning(true), 1500);
+      setAlertInfo({ type: 'error', message: 'QR code tidak terdaftar di master data!', show: true });
+      setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
       return;
     }
     const status = await getStatusKupon(uuid, tahunAktif.tahun);
     if (status && status.status === 'aktif') {
       setResult({ uuid, status: 'sudah_aktif', jenis: kupon.jenis });
-      message.info(`QR code ${uuid} (${kupon.jenis}) sudah diaktivasi untuk tahun ini.`);
-      setTimeout(() => setScanning(true), 1500);
+      setAlertInfo({ type: 'info', message: `QR code ${uuid} (${kupon.jenis}) sudah diaktivasi untuk tahun ini.`, show: true });
+      setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
       return;
     }
     await setStatusKuponAktif(uuid, tahunAktif.tahun);
     setResult({ uuid, status: 'berhasil', jenis: kupon.jenis });
-    message.success(`QR code ${uuid} (${kupon.jenis}) berhasil diaktivasi!`);
-    setTimeout(() => setScanning(true), 1500);
+    setAlertInfo({ type: 'success', message: `QR code ${uuid} (${kupon.jenis}) berhasil diaktivasi!`, show: true });
+    setTimeout(() => { setAlertInfo({ ...alertInfo, show: false }); setScanning(true); }, 2000);
   };
 
   const handleError = (err) => {
@@ -77,6 +78,16 @@ export default function AdminAktivasiQRPage() {
     <SidebarLayout activeKey={activeKey || 'aktivasi'} onMenuClick={onMenuClick}>
       <div style={{ maxWidth: 500, margin: '0 auto', background: '#fff', padding: 24, borderRadius: 8 }}>
         <Title level={3}>Aktivasi QR Code Kupon</Title>
+        {alertInfo.show && (
+          <Alert
+            type={alertInfo.type}
+            message={alertInfo.message}
+            showIcon
+            style={{ marginBottom: 16, position: 'sticky', top: 0, zIndex: 1000 }}
+            closable
+            onClose={() => setAlertInfo({ ...alertInfo, show: false })}
+          />
+        )}
         {loading ? <Spin /> : tahunAktif ? (
           <>
             <Alert type="info" showIcon style={{ marginBottom: 16 }} message={`Tahun aktif: ${tahunAktif.tahun}`} />

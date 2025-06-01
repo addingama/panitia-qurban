@@ -9,7 +9,7 @@ import { Button, message } from 'antd';
 
 // Konfigurasi global toast agar selalu terlihat di HP
 message.config({
-  top: 80, // posisi lebih ke bawah agar tidak tertutup address bar HP
+  top: 0, // posisi benar-benar di atas agar tidak tertutup apapun
   duration: 2.5,
   maxCount: 1,
 });

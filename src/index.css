@@ -14,4 +14,5 @@ code {
 
 .ant-message {
   z-index: 9999 !important;
+  top: 0 !important;
 }
