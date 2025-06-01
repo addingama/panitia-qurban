@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, InputNumber, Input, Typography, message, Popconfirm, Modal } from 'antd';
-import { getAllTahunAktif, addTahunAktif, updateTahunAktif, deleteTahunAktif } from '../services/kuponAktifService';
+import { getAllTahunAktif, addTahunAktif, updateTahunAktif, deleteTahunAktif, setTahunAktif } from '../services/kuponAktifService';
 import SidebarLayout from '../components/SidebarLayout';
 import { useOutletContext } from 'react-router-dom';
 
@@ -78,15 +78,36 @@ export default function AdminTahunKuponPage() {
     setLoading(false);
   };
 
+  const handleSetAktif = async (id) => {
+    setLoading(true);
+    try {
+      await setTahunAktif(id);
+      message.success('Tahun berhasil di-set sebagai aktif!');
+      fetchData();
+    } catch (e) {
+      message.error('Gagal set tahun aktif!');
+    }
+    setLoading(false);
+  };
+
   const columns = [
     { title: 'Tahun', dataIndex: 'tahun', key: 'tahun', sorter: (a, b) => b.tahun - a.tahun },
     { title: 'Kupon Panitia', dataIndex: 'jumlahPanitia', key: 'jumlahPanitia' },
     { title: 'Kupon Peserta', dataIndex: 'jumlahPeserta', key: 'jumlahPeserta' },
     {
+      title: 'Status',
+      dataIndex: 'aktif',
+      key: 'aktif',
+      render: aktif => aktif ? <span style={{ color: 'green', fontWeight: 'bold' }}>Aktif</span> : <span style={{ color: '#aaa' }}>-</span>,
+    },
+    {
       title: 'Aksi',
       key: 'aksi',
       render: (_, record) => (
         <>
+          {!record.aktif && (
+            <Button size="small" type="primary" onClick={() => handleSetAktif(record.id)} style={{ marginRight: 8 }}>Set Aktif</Button>
+          )}
           <Button size="small" onClick={() => onEdit(record)} style={{ marginRight: 8 }}>Edit</Button>
           <Popconfirm title="Hapus data tahun ini?" onConfirm={() => onDelete(record.id)} okText="Ya" cancelText="Batal">
             <Button size="small" danger>Hapus</Button>

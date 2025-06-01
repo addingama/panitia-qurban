@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
 
 const KUPON_AKTIF_COLLECTION = 'kupon_aktif';
@@ -22,4 +22,15 @@ export async function updateTahunAktif(id, data) {
 // Hapus tahun aktif
 export async function deleteTahunAktif(id) {
   return deleteDoc(doc(db, KUPON_AKTIF_COLLECTION, id));
+}
+
+// Set satu tahun sebagai aktif, nonaktifkan yang lain
+export async function setTahunAktif(id) {
+  const snapshot = await getDocs(collection(db, KUPON_AKTIF_COLLECTION));
+  const batch = writeBatch(db);
+  snapshot.docs.forEach(docSnap => {
+    const aktif = docSnap.id === id;
+    batch.update(doc(db, KUPON_AKTIF_COLLECTION, docSnap.id), { aktif });
+  });
+  await batch.commit();
 } 
