@@ -1,70 +1,78 @@
-# Getting Started with Create React App
+# Aplikasi Manajemen Kupon Qurban
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Aplikasi ini digunakan untuk mengelola, mengaktivasi, dan mendistribusikan kupon qurban berbasis QR code untuk panitia dan peserta. Sistem ini terdiri dari dua role utama: **admin** dan **panitia**.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Cara Menjalankan di Lokal
 
-### `npm start`
+1. **Clone repository ini**
+   ```bash
+   git clone <repo-url>
+   cd panitia-qurban
+   ```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+3. **Konfigurasi Firebase**
+   - Pastikan file konfigurasi Firebase sudah benar di `src/services/firebase.js`.
+   - Jika menggunakan .env, pastikan variabel environment sudah di-set sesuai kebutuhan.
+4. **Jalankan aplikasi**
+   ```bash
+   npm start
+   ```
+   Aplikasi akan berjalan di [http://localhost:3000](http://localhost:3000), bisa juga di test melalui HP yang menggunakan 1 wifi dengan PC dengan memasukkan IP address PC beserta port 3000
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Cara Penggunaan Sistem
 
-### `npm test`
+### 1. Login
+- Masuk ke aplikasi menggunakan email dan password yang telah didaftarkan.
+- Role (admin/panitia) akan otomatis terdeteksi dari email.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 2. Fitur Admin
+#### a. Master Data QR
+- Generate kupon QR (panitia/peserta) sesuai kebutuhan. Ini hanya dilakukan 1 x saja, tidak setiap tahun agar kupon yang lama tetap 
+- Hapus kupon yang tidak diperlukan.
+- Pilih beberapa kupon (checkbox) lalu klik **Print Terpilih** untuk mencetak QR code yang dipilih saja.
+- Print massal seluruh QR code jika diperlukan.
+- Preview QR code besar dengan klik pada QR di tabel.
 
-### `npm run build`
+#### b. Tahun Qurban
+- Tambah tahun qurban baru, tentukan kuota panitia & peserta.
+- Edit/hapus data tahun qurban.
+- Set salah satu tahun sebagai tahun aktif (hanya satu yang aktif).
+- Lihat daftar kupon yang diaktifkan pada tahun tertentu.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### c. Aktivasi Kupon
+- Pilih menu Aktivasi QR.
+- Klik **Mulai Scan** untuk mengaktifkan kamera.
+- Scan QR code satu per satu untuk mengaktivasi kupon pada tahun berjalan.
+- Sistem otomatis mencegah aktivasi melebihi kuota.
+- Setelah scan, kamera otomatis mati. Klik **Mulai Scan** lagi untuk scan berikutnya.
+- Statistik jumlah kupon yang belum diaktivasi tampil di atas scanner.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+#### d. Daftar Kupon Aktif Tahun Ini
+- Lihat semua kupon yang statusnya aktif/diambil pada tahun berjalan.
+- Filter/search berdasarkan UUID, jenis, atau status.
+- Hapus status aktif kupon jika diperlukan.
+- Statistik jumlah kupon aktif dan warning jika jumlah tidak sesuai kuota.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3. Fitur Panitia
+#### a. Scan Pengambilan Daging
+- Pilih menu Scan Pengambilan.
+- Klik **Mulai Scan** untuk mengaktifkan kamera.
+- Scan QR code peserta/panitia saat pengambilan daging.
+- Hanya kupon yang sudah diaktivasi tahun berjalan yang bisa digunakan.
+- Jika valid, status kupon diupdate menjadi "diambil".
+- Statistik jumlah kupon yang sudah diambil & sisa tampil di atas scanner.
+- Klik **Stop Scan** untuk menonaktifkan kamera.
 
-### `npm run eject`
+### 4. Penggunaan di Mobile
+- Menu otomatis berubah menjadi top navigation di perangkat mobile.
+- Scanner hanya menampilkan pilihan kamera belakang.
+- Jika terjadi error kamera, sistem otomatis mencoba kamera belakang lain.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
