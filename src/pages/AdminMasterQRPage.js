@@ -20,6 +20,8 @@ export default function AdminMasterQRPage() {
   const { activeKey, onMenuClick } = useOutletContext() || {};
   const [preview, setPreview] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
 
   const fetchKupons = async () => {
     setLoading(true);
@@ -131,6 +133,31 @@ export default function AdminMasterQRPage() {
     setTimeout(() => printWindow.print(), 500);
   };
 
+  const handlePrintSelected = async () => {
+    if (selectedRows.length === 0) return;
+    const printWindow = window.open('', '', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Print QR Code</title></head><body>');
+    printWindow.document.write('<h2 style="font-size:18px;">Daftar QR Code Kupon Terpilih</h2>');
+    printWindow.document.write('<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">');
+    for (let i = 0; i < selectedRows.length; i++) {
+      const k = selectedRows[i];
+      const dataUrl = await QRCode.toDataURL(k.uuid, { width: 96, margin: 2 });
+      if (i > 0 && i % 25 === 0) {
+        printWindow.document.write('</div><div style="page-break-before: always; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">');
+      }
+      printWindow.document.write(`
+        <div style="border:1px solid #ccc; padding:8px; margin:8px; text-align:center; width:120px; box-sizing:border-box;">
+          <div style=\"font-size:14px;\"><strong>${k.jenis.toUpperCase()}</strong></div>
+          <div style=\"margin:8px 0;\"><img src=\"${dataUrl}\" width=\"96\" height=\"96\" /></div>
+          <div style=\"font-size:12px;word-break:break-all;\">${k.uuid}</div>
+        </div>
+      `);
+    }
+    printWindow.document.write('</div></body></html>');
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
   // Hitung jumlah kupon per jenis
   const totalKupon = kupons.length;
   const totalPanitia = kupons.filter(k => k.jenis === 'panitia').length;
@@ -161,6 +188,9 @@ export default function AdminMasterQRPage() {
           <Form.Item>
             <Button onClick={handlePrint} type="default">Print Massal</Button>
           </Form.Item>
+          <Form.Item>
+            <Button onClick={handlePrintSelected} type="primary" disabled={selectedRows.length === 0}>Print Terpilih</Button>
+          </Form.Item>
         </Form>
         <Table
           columns={columns}
@@ -171,6 +201,14 @@ export default function AdminMasterQRPage() {
           bordered
           size="small"
           rowKey="id"
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys, rows) => {
+              setSelectedRowKeys(keys);
+              setSelectedRows(rows);
+            },
+            preserveSelectedRowKeys: true,
+          }}
         />
         <Drawer
           open={drawerOpen}
