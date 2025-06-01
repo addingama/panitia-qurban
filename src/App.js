@@ -5,6 +5,7 @@ import AdminMasterQRPage from './pages/AdminMasterQRPage';
 import AdminTahunKuponPage from './pages/AdminTahunKuponPage';
 import AdminAktivasiQRPage from './pages/AdminAktivasiQRPage';
 import AdminKuponAktifPage from './pages/AdminKuponAktifPage';
+import PanitiaScanPage from './pages/PanitiaScanPage';
 import { Button, message } from 'antd';
 
 // Konfigurasi global toast agar selalu terlihat di HP
@@ -82,7 +83,7 @@ export default function App() {
           path="/panitia"
           element={
             <RequireAuth role="panitia">
-              <PanitiaPage />
+              <PanitiaScanPage />
             </RequireAuth>
           }
         />

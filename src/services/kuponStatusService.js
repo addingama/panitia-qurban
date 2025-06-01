@@ -21,6 +21,16 @@ export async function setStatusKuponAktif(uuid, tahun) {
   });
 }
 
+// Set status kupon menjadi diambil untuk tahun tertentu
+export async function setStatusKuponDiambil(uuid, tahun) {
+  const docId = `${uuid}_${tahun}`;
+  await setDoc(doc(db, KUPON_STATUS_COLLECTION, docId), {
+    uuid,
+    tahun,
+    status: 'diambil',
+  });
+}
+
 // Ambil semua status kupon untuk tahun tertentu
 export async function getAllStatusKuponByTahun(tahun) {
   const q = query(collection(db, KUPON_STATUS_COLLECTION), where('tahun', '==', tahun));
