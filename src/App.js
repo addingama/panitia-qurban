@@ -1,25 +1,15 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+import AdminMasterQRPage from './pages/AdminMasterQRPage';
 import { Button } from 'antd';
 
-function handleLogout() {
-  localStorage.removeItem('role');
-  window.location.reload();
-}
-
-function AdminPage() {
-  return (
-    <div style={{ padding: 32 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Admin Page</h2>
-        <Button onClick={handleLogout} type="primary" danger>Logout</Button>
-      </div>
-      <p>Selamat datang, Admin!</p>
-    </div>
-  );
-}
-
 function PanitiaPage() {
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem('role');
+    navigate('/login', { replace: true });
+  };
   return (
     <div style={{ padding: 32 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -31,21 +21,38 @@ function PanitiaPage() {
   );
 }
 
+function RequireAuth({ children, role }) {
+  const userRole = localStorage.getItem('role');
+  if (!userRole) return <Navigate to="/login" replace />;
+  if (role && userRole !== role) return <Navigate to={`/${userRole}`} replace />;
+  return children;
+}
+
 function App() {
-  const role = localStorage.getItem('role');
-
-  if (!role) {
-    return <LoginPage />;
-  }
-
-  if (role === 'admin') {
-    return <AdminPage />;
-  }
-  if (role === 'panitia') {
-    return <PanitiaPage />;
-  }
-  // fallback jika role tidak valid
-  return <LoginPage />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth role="admin">
+              <AdminMasterQRPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/panitia"
+          element={
+            <RequireAuth role="panitia">
+              <PanitiaPage />
+            </RequireAuth>
+          }
+        />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
