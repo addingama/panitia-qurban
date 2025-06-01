@@ -1,0 +1,91 @@
+import React, { useEffect, useState } from 'react';
+import { Typography, Alert, Button, message, Spin } from 'antd';
+import { getAllTahunAktif } from '../services/kuponAktifService';
+import { getAllKupons } from '../services/kuponService';
+import { getStatusKupon, setStatusKuponAktif } from '../services/kuponStatusService';
+import SidebarLayout from '../components/SidebarLayout';
+import { useOutletContext } from 'react-router-dom';
+import QRScanner from '../components/QRScanner';
+
+const { Title } = Typography;
+
+export default function AdminAktivasiQRPage() {
+  const { activeKey, onMenuClick } = useOutletContext() || {};
+  const [tahunAktif, setTahunAktif] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [kupons, setKupons] = useState([]);
+  const [result, setResult] = useState(null);
+  const [scanError, setScanError] = useState(null);
+  const [scanning, setScanning] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const tahunList = await getAllTahunAktif();
+      const aktif = tahunList.find(t => t.aktif);
+      setTahunAktif(aktif);
+      const kuponList = await getAllKupons();
+      setKupons(kuponList);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const handleScan = async (data) => {
+    if (!data) return;
+    setScanning(false);
+    setResult(null);
+    setScanError(null);
+    if (!tahunAktif) {
+      message.error('Tahun aktif belum di-set.');
+      setTimeout(() => setScanning(true), 1500);
+      return;
+    }
+    const uuid = data.trim();
+    const kupon = kupons.find(k => k.uuid === uuid);
+    if (!kupon) {
+      message.error('QR code tidak terdaftar di master data!');
+      setTimeout(() => setScanning(true), 1500);
+      return;
+    }
+    const status = await getStatusKupon(uuid, tahunAktif.tahun);
+    if (status && status.status === 'aktif') {
+      setResult({ uuid, status: 'sudah_aktif', jenis: kupon.jenis });
+      message.info(`QR code ${uuid} (${kupon.jenis}) sudah diaktivasi untuk tahun ini.`);
+      setTimeout(() => setScanning(true), 1500);
+      return;
+    }
+    await setStatusKuponAktif(uuid, tahunAktif.tahun);
+    setResult({ uuid, status: 'berhasil', jenis: kupon.jenis });
+    message.success(`QR code ${uuid} (${kupon.jenis}) berhasil diaktivasi!`);
+    setTimeout(() => setScanning(true), 1500);
+  };
+
+  const handleError = (err) => {
+    if (typeof err === 'string' && err.toLowerCase().includes('notallowederror')) {
+      setScanError('Izin kamera ditolak. Silakan izinkan akses kamera.');
+    } else if (typeof err === 'string' && err.toLowerCase().includes('notfounderror')) {
+      setScanError('Tidak ada kamera yang ditemukan di perangkat.');
+    } else if (typeof err === 'string' && err.toLowerCase().includes('notreadableerror')) {
+      setScanError('Kamera sedang digunakan aplikasi lain.');
+    } else {
+      setScanError(null); // error scan frame biasa tidak ditampilkan
+    }
+  };
+
+  return (
+    <SidebarLayout activeKey={activeKey || 'aktivasi'} onMenuClick={onMenuClick}>
+      <div style={{ maxWidth: 500, margin: '0 auto', background: '#fff', padding: 24, borderRadius: 8 }}>
+        <Title level={3}>Aktivasi QR Code Kupon</Title>
+        {loading ? <Spin /> : tahunAktif ? (
+          <>
+            <Alert type="info" showIcon style={{ marginBottom: 16 }} message={`Tahun aktif: ${tahunAktif.tahun}`} />
+            {scanning && <QRScanner onScan={handleScan} onError={handleError} />}
+          </>
+        ) : (
+          <Alert type="warning" showIcon message="Belum ada tahun aktif. Silakan set tahun aktif terlebih dahulu." />
+        )}
+      </div>
+    </SidebarLayout>
+  );
+} 

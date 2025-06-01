@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Select, InputNumber, Form, message, Popconfirm, Typography, Tag } from 'antd';
+import { Table, Button, Select, InputNumber, Form, message, Popconfirm, Typography, Tag, Drawer } from 'antd';
 import { getAllKupons, addKupons, deleteKupon } from '../services/kuponService';
 import { generateKuponUUID } from '../utils/uuidGenerator';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -18,6 +18,8 @@ export default function AdminMasterQRPage() {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const { activeKey, onMenuClick } = useOutletContext() || {};
+  const [preview, setPreview] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const fetchKupons = async () => {
     setLoading(true);
@@ -88,7 +90,11 @@ export default function AdminMasterQRPage() {
       title: 'QR Code',
       dataIndex: 'uuid',
       key: 'qr',
-      render: uuid => <QRCodeCanvas value={uuid} size={48} />,
+      render: (uuid, record) => (
+        <span style={{ cursor: 'pointer' }} onClick={() => { setPreview(record); setDrawerOpen(true); }}>
+          <QRCodeCanvas value={uuid} size={48} />
+        </span>
+      ),
     },
     {
       title: 'Aksi',
@@ -166,6 +172,22 @@ export default function AdminMasterQRPage() {
           size="small"
           rowKey="id"
         />
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          title="Preview QR Code"
+          width={340}
+        >
+          {preview && (
+            <div style={{ textAlign: 'center' }}>
+              <QRCodeCanvas value={preview.uuid} size={220} />
+              <div style={{ marginTop: 16, fontSize: 16 }}>
+                <strong>{preview.uuid}</strong>
+                <div style={{ fontSize: 14, color: '#888' }}>{preview.jenis}</div>
+              </div>
+            </div>
+          )}
+        </Drawer>
       </div>
     </SidebarLayout>
   );

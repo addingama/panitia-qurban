@@ -3,7 +3,15 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, Outlet } from 'rea
 import LoginPage from './pages/LoginPage';
 import AdminMasterQRPage from './pages/AdminMasterQRPage';
 import AdminTahunKuponPage from './pages/AdminTahunKuponPage';
-import { Button } from 'antd';
+import AdminAktivasiQRPage from './pages/AdminAktivasiQRPage';
+import { Button, message } from 'antd';
+
+// Konfigurasi global toast agar selalu terlihat di HP
+message.config({
+  top: 80, // posisi lebih ke bawah agar tidak tertutup address bar HP
+  duration: 2.5,
+  maxCount: 1,
+});
 
 function PanitiaPage() {
   const navigate = useNavigate();
@@ -34,11 +42,13 @@ function AdminLayout() {
   const handleMenuClick = (key) => {
     if (key === 'master') navigate('/admin');
     if (key === 'tahun') navigate('/admin/tahun');
+    if (key === 'aktivasi') navigate('/admin/aktivasi');
   };
   // Tentukan menu aktif berdasarkan path
   const path = window.location.pathname;
   let activeKey = 'master';
   if (path.startsWith('/admin/tahun')) activeKey = 'tahun';
+  else if (path.startsWith('/admin/aktivasi')) activeKey = 'aktivasi';
   return (
     <>
       {/* Outlet akan render halaman child (MasterQR atau Tahun) */}
@@ -62,6 +72,7 @@ export default function App() {
         >
           <Route index element={<AdminMasterQRPage />} />
           <Route path="tahun" element={<AdminTahunKuponPage />} />
+          <Route path="aktivasi" element={<AdminAktivasiQRPage />} />
         </Route>
         <Route
           path="/panitia"

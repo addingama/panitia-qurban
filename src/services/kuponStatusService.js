@@ -1,0 +1,22 @@
+import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
+import { db } from './firebase';
+
+const KUPON_STATUS_COLLECTION = 'kupon_status';
+
+// Ambil status kupon untuk uuid & tahun tertentu
+export async function getStatusKupon(uuid, tahun) {
+  const q = query(collection(db, KUPON_STATUS_COLLECTION), where('uuid', '==', uuid), where('tahun', '==', tahun));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.length > 0 ? { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } : null;
+}
+
+// Set status kupon menjadi aktif untuk tahun tertentu
+export async function setStatusKuponAktif(uuid, tahun) {
+  // Gunakan kombinasi uuid-tahun sebagai id dokumen agar unik
+  const docId = `${uuid}_${tahun}`;
+  await setDoc(doc(db, KUPON_STATUS_COLLECTION, docId), {
+    uuid,
+    tahun,
+    status: 'aktif',
+  });
+} 
