@@ -6,6 +6,8 @@ import { QRCodeCanvas } from 'qrcode.react';
 import SidebarLayout from '../components/SidebarLayout';
 import QRCode from 'qrcode';
 import { useOutletContext } from 'react-router-dom';
+import { getAllStatusKuponByTahun } from '../services/kuponStatusService';
+import { getAllTahunAktif } from '../services/tahunQurbanService';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -22,11 +24,30 @@ export default function AdminMasterQRPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [statusKuponAktif, setStatusKuponAktif] = useState({});
+  const [tahunAktif, setTahunAktif] = useState(null);
+
+  const fetchTahunAktifAndStatus = async (kuponList) => {
+    const tahunList = await getAllTahunAktif();
+    const aktif = tahunList.find(t => t.aktif);
+    setTahunAktif(aktif);
+    if (aktif) {
+      const statusList = await getAllStatusKuponByTahun(aktif.tahun);
+      const statusMap = {};
+      statusList.forEach(s => {
+        statusMap[s.uuid] = s.status;
+      });
+      setStatusKuponAktif(statusMap);
+    } else {
+      setStatusKuponAktif({});
+    }
+  };
 
   const fetchKupons = async () => {
     setLoading(true);
     const data = await getAllKupons();
     setKupons(data);
+    await fetchTahunAktifAndStatus(data);
     setLoading(false);
   };
 
@@ -99,6 +120,29 @@ export default function AdminMasterQRPage() {
       ),
     },
     {
+      title: 'Status Aktivasi',
+      key: 'statusAktif',
+      filters: [
+        { text: 'Sudah Aktif', value: 'aktif' },
+        { text: 'Belum Aktif', value: 'belum' },
+      ],
+      onFilter: (value, record) => {
+        if (!tahunAktif) return false;
+        const status = statusKuponAktif[record.uuid];
+        if (value === 'aktif') return status === 'aktif' || status === 'diambil';
+        if (value === 'belum') return !status;
+        return false;
+      },
+      render: (_, record) => {
+        if (!tahunAktif) return <span style={{ color: '#aaa' }}>-</span>;
+        const status = statusKuponAktif[record.uuid];
+        if (status === 'aktif' || status === 'diambil') {
+          return <Tag color="green">Sudah Aktif</Tag>;
+        }
+        return <Tag color="red">Belum Aktif</Tag>;
+      },
+    },
+    {
       title: 'Aksi',
       key: 'aksi',
       render: (_, record) => (
@@ -112,7 +156,6 @@ export default function AdminMasterQRPage() {
   const handlePrint = async () => {
     const printWindow = window.open('', '', 'width=900,height=700');
     printWindow.document.write('<html><head><title>Print QR Code</title></head><body>');
-    printWindow.document.write('<h2 style="font-size:18px;">Daftar QR Code Kupon Qurban</h2>');
     printWindow.document.write('<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">');
     for (let i = 0; i < kupons.length; i++) {
       const k = kupons[i];
@@ -124,7 +167,7 @@ export default function AdminMasterQRPage() {
         <div style="border:1px solid #ccc; padding:8px; margin:8px; text-align:center; width:120px; box-sizing:border-box;">
           <div style=\"font-size:14px;\"><strong>${k.jenis.toUpperCase()}</strong></div>
           <div style=\"margin:8px 0;\"><img src=\"${dataUrl}\" width=\"96\" height=\"96\" /></div>
-          <div style=\"font-size:12px;word-break:break-all;\">${k.uuid}</div>
+          <div style=\"font-size:10px;word-break:break-all;\">${k.uuid}</div>
         </div>
       `);
     }
